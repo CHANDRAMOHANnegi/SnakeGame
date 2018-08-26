@@ -4,32 +4,39 @@ import java.util.ArrayList;
 
 import javax.swing.Timer;
 
+import commonUtils.Playsong;
+import commonUtils.Snake;
+
  
 
 public class Collisions implements SnakeGameConstants {
 
+	 static int countFood=0;
 	 
-	SnakeBody head;
+	Snake head;
 	
 	
 	
-	 public   boolean foodeaten(ArrayList<SnakeBody> snakebody){
+	 public   boolean foodeaten(ArrayList<Snake> s){
 		 
-				 head=snakebody.get(0);
+				 head=s.get(0);
 				 
 				 boolean iscollide=false;
 				 
 			     boolean i=(Math.abs(head.getX()-SnakeFood.x)<=SnakeFood.foodwidth&&
 			    		   (Math.abs(head.getY()-SnakeFood.y)<=SnakeFood.foodheight));
 			          
-			               if(i){ Playsong.playsong(EATSONG); iscollide=true;
-			   
-			               SnakeFood.randomgenrator();
-			      
-			               SnakeBody e=new SnakeBody(-111, -111 );
-			       		     
-			       		   snakebody.add(e);
-			       		   iscollide=false;
+			             if(i){
+			            	 
+			            	   Playsong.playsong(EATSONG); 
+			            	   iscollide=true;
+			            	   countFood++;
+				               SnakeFood.randomgenrator();
+				      
+				               SnakeBody e=new SnakeBody(-111, -111 );
+				       		     
+				       		   s.add(e);
+				       		   iscollide=false;
 			       		 
 			                   } 
 			               
@@ -39,8 +46,10 @@ public class Collisions implements SnakeGameConstants {
 	 
 	 
 	 
-	 public void wallCollision(){
-		 
+	 public void wallCollision(ArrayList<Snake> s){
+		  	
+		 			head=s.get(0);
+		  
 				 if(head.getX()<=BOARDX){head.setX(BOARDWIDTH+BOARDX-16);}
 				  
 				 if(head.getX()>=BOARDWIDTH+BOARDX){head.setX(260);}
@@ -55,12 +64,13 @@ public class Collisions implements SnakeGameConstants {
 	 
 	 
 	 
-	public boolean collisionWithBody(ArrayList<SnakeBody> snakebody,Timer timer){
+	public boolean collisionWithBody(ArrayList<Snake> s,Timer timer){
+		 head=s.get(0);
 				 boolean collideWithBody=false;
 				 
-				 for(int i=1;i<snakebody.size()-1;i++){
+				 for(int i=1;i<s.size()-1;i++){
 				 
-				if(head.getX()==snakebody.get(i+1).getX()&&head.getY()==snakebody.get(i+1).getY()){
+				if(head.getX()==s.get(i+1).getX()&&head.getY()==s.get(i+1).getY()){
 					
 					collideWithBody=true;
 					System.out.println("gameOver");

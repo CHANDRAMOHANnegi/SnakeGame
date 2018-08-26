@@ -1,6 +1,7 @@
 package snakegamemultiplayer;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -8,17 +9,22 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.Timer;
+
+import commonUtils.Snake;
+import cpuSnake.CpuSnake;
  
 
 public class SnakeGameBoard extends JPanel implements SnakeGameConstants ,ActionListener{
 	
        
 		Timer timer;
-		ArrayList<SnakeBody> snakebody;
+		ArrayList<Snake> snakebody;
+		ArrayList<Snake> cpusnakebody;
+		
 		SnakeBody head;
+		CpuSnake cpuhead;
 		boolean left,right ,up,down, iscollide,collideWithBody;
 	 
 		int x=500;
@@ -33,17 +39,24 @@ public class SnakeGameBoard extends JPanel implements SnakeGameConstants ,Action
 		SnakeGameBoard()
 		
 		{
+			
 			collision=new Collisions();
 			draw=new Drawing();
+			
+			cpusnakebody=new ArrayList<>();
+			head=new SnakeBody(300,400);
+			
 			snakebody=new ArrayList<>();
-			head=new SnakeBody(x,y);
+		    cpuhead=new CpuSnake(x,y);
+			
 			snakebody.add(head);
- 
+			cpusnakebody.add(cpuhead);
 			gameloop();
-		    setuplevel();
+		    setuplevel(snakebody,cpusnakebody);
+		   
  			setFocusable(true);
 			controller();
-	 
+		
 				
 		} 
 		
@@ -59,7 +72,7 @@ public class SnakeGameBoard extends JPanel implements SnakeGameConstants ,Action
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
+		 
 			repaint();
 			
 		}
@@ -70,16 +83,22 @@ public class SnakeGameBoard extends JPanel implements SnakeGameConstants ,Action
 			 * 
 			 */
 		
-			public void setuplevel(){
+			public void setuplevel(ArrayList<Snake> snake,ArrayList<Snake> cpu){
 				
 					for(int i=1;i<3;i++){
-						snakebody.add( new SnakeBody(head.getX()+i*20,head.getY()));
+						snake.add( new SnakeBody(head.getX()+i*20,head.getY()));
+						cpu.add( new CpuSnake(cpuhead.getX()+i*20,cpuhead.getY()));
+						
+ 				/*****************	cpusnake created ************************************/
+						 
 					} 
 				
 				}  
 			
+			
+			
 	
-	  public void move(){
+	  public void move(ArrayList<Snake> s){
 						  
 							if(up&&speedy==0){
 					    		speedy=-SIZE;
@@ -108,59 +127,70 @@ public class SnakeGameBoard extends JPanel implements SnakeGameConstants ,Action
 					    	
 					    	if(speedx!=0||speedy!=0 ){
 					    		
-					    	for(int i=snakebody.size()-1;i>0;i--)
+					    	for(int i=s.size()-1;i>0;i--)
 					    	{
 					    		
-					    		 snakebody.get(i).setX(snakebody.get(i-1).getX());
+					    		 s.get(i).setX(s.get(i-1).getX());
 					    		 
-					    		 snakebody.get(i).setY(snakebody.get(i-1).getY());
+					    		 s.get(i).setY(s.get(i-1).getY());
 					    		 
 					    	}
 					    	
-					    	head.move(speedx,speedy);
+					    	s.get(0).move(speedx,speedy);
 					    	
 					    	} 
 					   //***************************important*****************************//
 					    	
 					  }    
-			   
-	
-	 
+			    
 	 
 	//***************paint component****************************//
 	
 	public void paintComponent(Graphics g){
 		
 		super.paintComponent(g);
+		 draw.drawBackground(g); 
+		 draw.drawScoreboard(g);
+	   
+	 move(snakebody);
+	//
+		//move(cpusnakebody);
+		 
+		this.iscollide=collision.foodeaten(snakebody); 
+		this.iscollide=collision.foodeaten(cpusnakebody); 
+        collision.wallCollision(snakebody); 
+        collision.wallCollision(cpusnakebody); 
+		this.collideWithBody=collision.collisionWithBody(snakebody, timer); 
+		drawfoodagain(g,snakebody);
+		 drawfoodagain(g,cpusnakebody);
+		//g.fillOval(SnakeGameFrameWidth-8,SnakeGameFrameHeight-31, 6, 6);
+		if(collideWithBody){ gameover(g);}
+	     for(int i=snakebody.size();i>0;i--){
+	    	 //snakebody.get(index)
+	       draw.drawSnakebody(snakebody,g);//drawSnakebody(g);
+	       draw.drawSnakebody(cpusnakebody,g);
+	     }
+	
+	} 
+	
+	public void drawfoodagain(Graphics g,ArrayList<Snake> s){
 		
-	    draw.drawBackground(g);//drawBackground(g);
-                  
-		move();
-		this.iscollide=collision.foodeaten(snakebody);//foodeaten();
-        collision.wallCollision();//wallCollision();
-		this.collideWithBody=collision.collisionWithBody(snakebody, timer);//collisionWithBody();
-		
-		for(int i=1;i<snakebody.size();i++){
+		 
+		for(int i=1;i<s.size();i++){
 			
-		if((Math.abs(snakebody.get(i).x-SnakeFood.x)<SnakeFood.foodwidth)&&
-				(Math.abs(snakebody.get(i).y-SnakeFood.y)<SnakeFood.foodheight)){
+		if((Math.abs(s.get(i).getX()-SnakeFood.x)<SnakeFood.foodwidth)&&
+				(Math.abs(s.get(i).getY()-SnakeFood.y)<SnakeFood.foodheight)){
 			SnakeFood.randomgenrator();break;
 			}
 		
 		else{
 		SnakeFood.drawfood(g);
 		}} 
-		//g.fillOval(SnakeGameFrameWidth-8,SnakeGameFrameHeight-31, 6, 6);
-		if(collideWithBody){ gameover(g);}
-	     for(int i=snakebody.size();i>0;i--){
-	    	 //snakebody.get(index)
-	       draw.drawSnakebody(snakebody,g);//drawSnakebody(g);
-	     }
-	
+		
+		
+		
+		
 	}
-	        
-	
-	
 	
 			 public void	controller(){
 				
@@ -182,16 +212,14 @@ public class SnakeGameBoard extends JPanel implements SnakeGameConstants ,Action
 								if(keycode==KeyEvent.VK_RIGHT) right=false;
 								if(keycode==KeyEvent.VK_UP) up=false;
 								if(keycode==KeyEvent.VK_DOWN) down=false;
-						 
-								 	
-							
+						  
 							}
 							
 							@Override
 							public void keyPressed(KeyEvent e) {
 								// TODO Auto-generated method stub
 							int keycode=e.getKeyCode();
-							if(keycode==KeyEvent.VK_LEFT) left=true;
+							   if(keycode==KeyEvent.VK_LEFT) left=true;
 								if(keycode==KeyEvent.VK_RIGHT) right=true;
 								if(keycode==KeyEvent.VK_UP) up=true;
 								if(keycode==KeyEvent.VK_DOWN) down=true;
@@ -202,25 +230,29 @@ public class SnakeGameBoard extends JPanel implements SnakeGameConstants ,Action
 
 			 
 			 public void gameover(Graphics g){
-						 
+				 
+				 Font font = new Font(Font.SERIF, Font.BOLD, 40);
 						 g.setColor(Color.GREEN);
-						 
-						 g.drawString("GAME OVER", SnakeGameFrameWidth/2, SnakeGameFrameHeight/2);
-						 
+						 g.setFont(font);
+						 		
+						 g.drawString("GAME OVER", SnakeGameFrameWidth/2-100, SnakeGameFrameHeight/2);
+						   
+						 System.out.println();
 						     }
+			  
 			 
-			 
-			 
+			 public void movecpusnake(ArrayList<CpuSnake> c){
+				   
+				 
+				 
+			 }
 			 
 				/**
 				 * @param g
 				 * this all code is replaced by Collision class  && Drawing class
 				 * 
-				 */
- 
- 
- 
-
+				 */ 
+			 
 				 /**
 				  * 
 				  * draw  background

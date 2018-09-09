@@ -1,10 +1,8 @@
 package cpuSnake;
 
-    import snakegamemultiplayer.SnakeGameConstants;
-
+import snakegamemultiplayer.SnakeGameConstants;
 import java.awt.Color;
-import java.awt.Graphics;
-import java.util.ArrayList;
+import java.awt.Graphics; 
 
 import commonUtils.Snake; 
 
@@ -25,12 +23,8 @@ import commonUtils.Snake;
 			  
 			 g.setColor(Color.black);
 			// g.fillRoundRect(,);
-			 g.fillRect(getX()+1,getY()+2,SNAKEBODYWIDTH-3,SNAKEBODYHEIGHT-3);
+			 g.fillOval(getX()+1,getY()+2,SNAKEBODYWIDTH-3,SNAKEBODYHEIGHT-3);
 			 
 		} 
 	
-	
-	
-	
-	   
-}
+  }
